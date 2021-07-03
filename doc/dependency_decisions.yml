@@ -1,0 +1,51 @@
+---
+- - :approve
+  - github.com/bndr/gojenkins
+  - :who:
+    :why:
+    :versions: []
+    :when: 2021-07-03 20:20:47.384114709 Z
+- - :permit
+  - MIT
+  - :who:
+    :why:
+    :versions: []
+    :when: 2021-07-03 20:22:02.695572138 Z
+- - :license
+  - github.com/spf13/afero
+  - Apache 2.0
+  - :who:
+    :why:
+    :versions: []
+    :when: 2021-07-03 20:23:20.388353338 Z
+- - :license
+  - github.com/spf13/cobra
+  - Apache 2.0
+  - :who:
+    :why:
+    :versions: []
+    :when: 2021-07-03 20:24:01.924404462 Z
+- - :permit
+  - Apache 2.0
+  - :who:
+    :why:
+    :versions: []
+    :when: 2021-07-03 20:24:39.439056522 Z
+- - :permit
+  - Mozilla Public License 2.0
+  - :who:
+    :why:
+    :versions: []
+    :when: 2021-07-03 20:25:15.039199588 Z
+- - :permit
+  - New BSD
+  - :who:
+    :why:
+    :versions: []
+    :when: 2021-07-03 20:25:45.801683292 Z
+- - :permit
+  - Simplified BSD
+  - :who:
+    :why:
+    :versions: []
+    :when: 2021-07-03 20:26:24.874017246 Z
