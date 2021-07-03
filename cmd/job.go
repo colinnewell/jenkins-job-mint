@@ -1,23 +1,34 @@
 package cmd
 
 import (
-	"fmt"
+	"context"
+	"log"
 
+	"github.com/bndr/gojenkins"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // jobCmd represents the job command
 var jobCmd = &cobra.Command{
-	Use:   "job",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Args:  cobra.ExactValidArgs(1),
+	Use:   "job new-job-name",
+	Short: "Create a job",
+	Long: `Create a new job in Jenkins
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Provide info to replace in the configs.
+Jenkins configs support templating.
+`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("job called")
+		// FIXME: ensure we also allow creation in folders
+		user := viper.GetString("user")
+		url := viper.GetString("url")
+		token := viper.GetString("token")
+		jenkins := gojenkins.CreateJenkins(nil, url, user, token)
+		ctx := context.Background()
+		if _, err := jenkins.Init(ctx); err != nil {
+			log.Fatal("Failed to connect to Jenkins", err)
+		}
 	},
 }
 
