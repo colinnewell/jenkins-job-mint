@@ -7,6 +7,7 @@ mint: *.go cmd/*.go
 	go build -o mint -ldflags "-X github.com/colinnewell/jenkins-job-mint/cmd.Version=$(VERSION)" main.go
 
 test:
+	go test ./...
 
 install: mint
 	cp mint /usr/local/bin
