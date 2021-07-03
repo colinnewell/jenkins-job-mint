@@ -26,6 +26,19 @@ var getCmd = &cobra.Command{
 			log.Fatal("Failed to connect to Jenkins", err)
 		}
 
+		for _, jobName := range args {
+			// write to files.
+			job, err := jenkins.GetJob(ctx, jobName)
+			if err != nil {
+				fmt.Printf("Failed to get config for %s: %s\n", jobName, err)
+				continue
+			}
+			config, err := job.GetConfig(ctx)
+			if err != nil {
+				fmt.Printf("Failed to get config for %s: %s\n", jobName, err)
+			}
+			fmt.Printf("%s\n--------------------\n%s\n", jobName, config)
+		}
 		fmt.Printf("get called user:%s jobs: %v\n", user, args)
 	},
 }
