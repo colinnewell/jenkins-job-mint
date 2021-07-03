@@ -15,3 +15,7 @@ install: mint
 lint:
 	golangci-lint run
 	gofmt -l -s .
+
+license-check:
+	# gem install license_finder
+	license_finder
