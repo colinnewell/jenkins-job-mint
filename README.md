@@ -1,2 +1,45 @@
 # jenkins-job-mint
-Mint new jenkins jobs
+
+## Overview
+
+Mint new jenkins jobs quickly.
+
+## Building
+
+	git clone https://github.com/colinnewell/jenkins-job-mint.git
+	cd jenkins-job-mint
+	make
+	sudo make install
+
+## Config file
+
+The tool allows you to provide connection settings in multiple ways, command
+line flags, config file, and via env vars.
+
+Config files are probably the most sensible way to store the connection info
+for Jenkins:
+
+This is expected to live in: `~/.jenkins-job-mint.yaml`
+
+
+```yaml
+user: admin
+token: xxxxxxxxxxxxx
+url: http://localhost:8080
+```
+
+You can override which config file to load using `--config file`.
+
+Env vars are expected to start `MINT_`.  So `MINT_URL=https://jenkins` will
+override the Jenkins URL for example.
+
+## Using
+
+On it's own it provides help and works in the usual way a multi command tool
+works.
+
+    mint
+
+To get the Jenkins config for jobs to make it easy for you to create templates.
+
+    mint get -v test-job test-job2
