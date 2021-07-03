@@ -13,7 +13,7 @@ var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "jenkins-job-mint",
+	Use:   "mint",
 	Short: "Mint jenkins jobs",
 	Long:  `This is a tool to simplify the creation of jenkins jobs`,
 	// Uncomment the following line if your bare application
