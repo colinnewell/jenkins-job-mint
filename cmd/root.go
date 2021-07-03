@@ -10,6 +10,7 @@ import (
 )
 
 var cfgFile string
+var user string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -35,6 +36,16 @@ func init() {
 	// will be global for your application.
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.jenkins-job-mint.yaml)")
+	rootCmd.PersistentFlags().StringVar(&user, "user", "", "Jenkins username")
+
+	if err := viper.BindPFlag("user", rootCmd.PersistentFlags().Lookup("user")); err != nil {
+		panic(err)
+	}
+	// flag.StringVar(&user, "user", "", "Username")
+	// flag.StringVar(&password, "password", "", "Token password")
+	// flag.StringVar(&project, "project", "", "Jenkins project")
+	// flag.StringVar(&build, "build", "", "Jenkins build")
+	// flag.StringVar(&url, "url", "http://localhost:8080", "Jenkins url")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
@@ -57,10 +68,23 @@ func initConfig() {
 		viper.SetConfigName(".jenkins-job-mint")
 	}
 
+	viper.SetEnvPrefix("mint")
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 	}
+}
+
+func standardValidation(cmd *cobra.Command, args []string) error {
+	if err := cobra.MinimumNArgs(1)(cmd, args); err != nil {
+		return err
+	}
+	for _, f := range []string{"user"} {
+		if viper.GetString(f) == "" {
+			return fmt.Errorf("%s must be provided", f)
+		}
+	}
+	return nil
 }
