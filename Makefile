@@ -10,3 +10,7 @@ test:
 
 install: mint
 	cp mint /usr/local/bin
+
+lint:
+	golangci-lint run
+	gofmt -l -s .

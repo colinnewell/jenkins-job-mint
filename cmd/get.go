@@ -59,5 +59,7 @@ func init() {
 	rootCmd.AddCommand(getCmd)
 
 	getCmd.PersistentFlags().String("output-folder", "", "Output folder for config files to be written")
-	viper.BindPFlag("output-folder", getCmd.PersistentFlags().Lookup("output-folder"))
+	if err := viper.BindPFlag("output-folder", getCmd.PersistentFlags().Lookup("output-folder")); err != nil {
+		log.Fatal("Programmer error:", err)
+	}
 }
