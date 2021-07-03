@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
+	"path"
+	"time"
 
 	"github.com/bndr/gojenkins"
 	"github.com/spf13/cobra"
@@ -15,7 +18,7 @@ var getCmd = &cobra.Command{
 	Args:  standardValidation,
 	Use:   "get job [job2 ...]",
 	Short: "Retrieve jenkins config",
-	Long:  `Download the jenkins config xml.`,
+	Long:  `Download the jenkins config xml and store in files.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		user := viper.GetString("user")
 		url := viper.GetString("url")
@@ -25,6 +28,8 @@ var getCmd = &cobra.Command{
 		if _, err := jenkins.Init(ctx); err != nil {
 			log.Fatal("Failed to connect to Jenkins", err)
 		}
+
+		folder := viper.GetString("output-folder")
 
 		for _, jobName := range args {
 			// write to files.
@@ -37,22 +42,20 @@ var getCmd = &cobra.Command{
 			if err != nil {
 				fmt.Printf("Failed to get config for %s: %s\n", jobName, err)
 			}
-			fmt.Printf("%s\n--------------------\n%s\n", jobName, config)
+			filename := fmt.Sprintf("job-%s-config-%d.xml", jobName, time.Now().Unix())
+			filename = path.Join(folder, filename)
+			if err := os.WriteFile(filename, []byte(config), 0644); err != nil {
+				fmt.Printf("Failed to write config for %s: %s\n", jobName, err)
+				continue
+			}
+			fmt.Printf("%s: wrote %s\n", jobName, filename)
 		}
-		fmt.Printf("get called user:%s jobs: %v\n", user, args)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(getCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// getCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// getCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	getCmd.PersistentFlags().String("output-folder", "", "Output folder for config files to be written")
+	viper.BindPFlag("output-folder", getCmd.PersistentFlags().Lookup("output-folder"))
 }
