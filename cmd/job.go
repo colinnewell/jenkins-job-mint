@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"log"
+	"os"
 
 	"github.com/bndr/gojenkins"
 	"github.com/spf13/cobra"
@@ -11,7 +13,19 @@ import (
 
 // jobCmd represents the job command
 var jobCmd = &cobra.Command{
-	Args:  cobra.ExactValidArgs(1),
+	Args: func(cmd *cobra.Command, args []string) error {
+		if err := standardValidation(cmd, args); err != nil {
+			return err
+		}
+		if err := cobra.ExactValidArgs(1)(cmd, args); err != nil {
+			return err
+		}
+		// check we have template
+		if !viper.IsSet("template") {
+			return errors.New("template must be specified")
+		}
+		return nil
+	},
 	Use:   "job new-job-name",
 	Short: "Create a job",
 	Long: `Create a new job in Jenkins
@@ -29,19 +43,25 @@ Jenkins configs support templating.
 		if _, err := jenkins.Init(ctx); err != nil {
 			log.Fatal("Failed to connect to Jenkins", err)
 		}
+
+		template := viper.GetString("template")
+		config, err := os.ReadFile(template)
+		if err != nil {
+			log.Fatalf("Failed to load template %s: %s", template, err)
+		}
+
+		if _, err := jenkins.CreateJob(ctx, string(config), args[0]); err != nil {
+			log.Fatalf("Failed to create job %s: %s", args[0], err)
+		}
+
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(jobCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// jobCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// jobCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	jobCmd.PersistentFlags().String("template", "", "Template file containing jenkins config")
+	if err := viper.BindPFlag("template", jobCmd.PersistentFlags().Lookup("template")); err != nil {
+		log.Fatal("Programmer error:", err)
+	}
 }
