@@ -44,9 +44,9 @@ To get the Jenkins config for jobs to make it easy for you to create templates.
 
     mint get -v test-job test-job2
 
-Create a new job using a template:
-
-	mint job --template template.xml --variables '{"a":3}' new-job
+Once you have the config files edit them to replace parts that need changing
+when a new job is created.  The `job` variable is provided as standard, others
+can be passed in using the `--variables` command line arg.
 
 The template can use the standard Go text/template syntax.
 
@@ -60,3 +60,7 @@ echo {{ .job | html }} - {{ .a | html }}
     </hudson.tasks.Shell>
   </builders>
 ```
+
+Create a new job using a template:
+
+	mint job --template template.xml --variables '{"a":3}' new-job

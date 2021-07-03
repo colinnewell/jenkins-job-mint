@@ -34,7 +34,9 @@ var jobCmd = &cobra.Command{
 	Long: `Create a new job in Jenkins
 
 Provide info to replace in the configs.
-Jenkins configs support templating.
+
+The templates use text/template syntax and have job plus other variables
+provided via the command line passed in.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		job := args[0]
