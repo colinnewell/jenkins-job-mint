@@ -35,12 +35,12 @@ var getCmd = &cobra.Command{
 			// write to files.
 			job, err := jenkins.GetJob(ctx, jobName)
 			if err != nil {
-				fmt.Printf("Failed to get config for %s: %s\n", jobName, err)
+				log.Printf("Failed to get config for %s: %s\n", jobName, err)
 				continue
 			}
 			config, err := job.GetConfig(ctx)
 			if err != nil {
-				fmt.Printf("Failed to get config for %s: %s\n", jobName, err)
+				log.Printf("Failed to get config for %s: %s\n", jobName, err)
 			}
 			filename := fmt.Sprintf("job-%s-config-%d.xml", jobName, time.Now().Unix())
 			filename = path.Join(folder, filename)
@@ -48,7 +48,9 @@ var getCmd = &cobra.Command{
 				fmt.Printf("Failed to write config for %s: %s\n", jobName, err)
 				continue
 			}
-			fmt.Printf("%s: wrote %s\n", jobName, filename)
+			if viper.GetBool("verbose") {
+				fmt.Printf("%s: wrote %s\n", jobName, filename)
+			}
 		}
 	},
 }
