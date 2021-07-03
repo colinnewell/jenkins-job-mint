@@ -1,8 +1,11 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"log"
 
+	"github.com/bndr/gojenkins"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -14,7 +17,15 @@ var getCmd = &cobra.Command{
 	Short: "Retrieve jenkins config",
 	Long:  `Download the jenkins config xml.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		user := viper.Get("user")
+		user := viper.GetString("user")
+		url := viper.GetString("url")
+		token := viper.GetString("token")
+		jenkins := gojenkins.CreateJenkins(nil, url, user, token)
+		ctx := context.Background()
+		if _, err := jenkins.Init(ctx); err != nil {
+			log.Fatal("Failed to connect to Jenkins", err)
+		}
+
 		fmt.Printf("get called user:%s jobs: %v\n", user, args)
 	},
 }
