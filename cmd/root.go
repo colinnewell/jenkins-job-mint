@@ -10,7 +10,6 @@ import (
 )
 
 var cfgFile string
-var user string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -36,16 +35,15 @@ func init() {
 	// will be global for your application.
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.jenkins-job-mint.yaml)")
-	rootCmd.PersistentFlags().StringVar(&user, "user", "", "Jenkins username")
 
-	if err := viper.BindPFlag("user", rootCmd.PersistentFlags().Lookup("user")); err != nil {
-		panic(err)
+	var user, token, url string
+	rootCmd.PersistentFlags().StringVar(&user, "user", "", "Jenkins username")
+	rootCmd.PersistentFlags().StringVar(&token, "token", "", "Jenkins auth token")
+	rootCmd.PersistentFlags().StringVar(&url, "url", "http://localhost:8080", "Jenkins url")
+
+	for _, f := range []string{"user", "token", "url"} {
+		viper.BindPFlag(f, rootCmd.PersistentFlags().Lookup(f))
 	}
-	// flag.StringVar(&user, "user", "", "Username")
-	// flag.StringVar(&password, "password", "", "Token password")
-	// flag.StringVar(&project, "project", "", "Jenkins project")
-	// flag.StringVar(&build, "build", "", "Jenkins build")
-	// flag.StringVar(&url, "url", "http://localhost:8080", "Jenkins url")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
@@ -81,7 +79,7 @@ func standardValidation(cmd *cobra.Command, args []string) error {
 	if err := cobra.MinimumNArgs(1)(cmd, args); err != nil {
 		return err
 	}
-	for _, f := range []string{"user"} {
+	for _, f := range []string{"user", "token", "url"} {
 		if viper.GetString(f) == "" {
 			return fmt.Errorf("%s must be provided", f)
 		}
