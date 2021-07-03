@@ -12,7 +12,6 @@ var Version = "No version defined at build time"
 
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{
-	Args:  standardValidation,
 	Use:   "version",
 	Short: "Display version number",
 	Long:  `Provide information about the version of the tool.`,
