@@ -1,10 +1,13 @@
 package cmd
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"log"
 	"os"
+	"text/template"
 
 	"github.com/bndr/gojenkins"
 	"github.com/spf13/cobra"
@@ -34,6 +37,17 @@ Provide info to replace in the configs.
 Jenkins configs support templating.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
+		job := args[0]
+
+		variablesString := viper.GetString("variables")
+		vars := map[string]interface{}{}
+		vars["job"] = job
+		if variablesString != "" {
+			if err := json.Unmarshal([]byte(variablesString), &vars); err != nil {
+				log.Fatalf("Unable to decode the variables: %s", err)
+			}
+		}
+
 		// FIXME: ensure we also allow creation in folders
 		user := viper.GetString("user")
 		url := viper.GetString("url")
@@ -44,14 +58,25 @@ Jenkins configs support templating.
 			log.Fatal("Failed to connect to Jenkins", err)
 		}
 
-		template := viper.GetString("template")
-		config, err := os.ReadFile(template)
+		templateName := viper.GetString("template")
+		config, err := os.ReadFile(templateName)
 		if err != nil {
-			log.Fatalf("Failed to load template %s: %s", template, err)
+			log.Fatalf("Failed to load template %s: %s", templateName, err)
 		}
 
-		if _, err := jenkins.CreateJob(ctx, string(config), args[0]); err != nil {
-			log.Fatalf("Failed to create job %s: %s", args[0], err)
+		tmpl, err := template.New("job-config").Parse(string(config))
+		if err != nil {
+			log.Fatalf("Failed to parse template %s: %s", templateName, err)
+		}
+		var buf bytes.Buffer
+		if err = tmpl.Execute(&buf, vars); err != nil {
+			log.Fatalf("Failed to process template %s: %s", templateName, err)
+		}
+
+		// generate the template
+
+		if _, err := jenkins.CreateJob(ctx, buf.String(), job); err != nil {
+			log.Fatalf("Failed to create job %s: %s", job, err)
 		}
 
 	},
@@ -62,6 +87,10 @@ func init() {
 
 	jobCmd.PersistentFlags().String("template", "", "Template file containing jenkins config")
 	if err := viper.BindPFlag("template", jobCmd.PersistentFlags().Lookup("template")); err != nil {
+		log.Fatal("Programmer error:", err)
+	}
+	jobCmd.PersistentFlags().String("variables", "", "Variables to use in the template (json)")
+	if err := viper.BindPFlag("variables", jobCmd.PersistentFlags().Lookup("variables")); err != nil {
 		log.Fatal("Programmer error:", err)
 	}
 }
