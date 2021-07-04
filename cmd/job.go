@@ -7,6 +7,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"path/filepath"
 	"text/template"
 
 	"github.com/bndr/gojenkins"
@@ -50,10 +51,10 @@ provided via the command line passed in.
 			}
 		}
 
-		// FIXME: ensure we also allow creation in folders
 		user := viper.GetString("user")
 		url := viper.GetString("url")
 		token := viper.GetString("token")
+
 		jenkins := gojenkins.CreateJenkins(nil, url, user, token)
 		ctx := context.Background()
 		if _, err := jenkins.Init(ctx); err != nil {
@@ -75,10 +76,16 @@ provided via the command line passed in.
 			log.Fatalf("Failed to process template %s: %s", templateName, err)
 		}
 
-		// generate the template
-
-		if _, err := jenkins.CreateJob(ctx, buf.String(), job); err != nil {
-			log.Fatalf("Failed to create job %s: %s", job, err)
+		folder := viper.GetString("folder")
+		if folder != "" {
+			folders := splitFolders(folder)
+			if _, err := jenkins.CreateJobInFolder(ctx, buf.String(), job, folders...); err != nil {
+				log.Fatalf("Failed to create job %s: %s", job, err)
+			}
+		} else {
+			if _, err := jenkins.CreateJob(ctx, buf.String(), job); err != nil {
+				log.Fatalf("Failed to create job %s: %s", job, err)
+			}
 		}
 
 	},
@@ -101,4 +108,19 @@ func init() {
 			log.Fatal("Programmer error:", err)
 		}
 	}
+}
+
+func splitFolders(folder string) []string {
+	folders := []string{}
+	dir, file := filepath.Split(folder)
+	for ; dir != ""; dir, file = filepath.Split(folder) {
+		folders = append(folders, file)
+		folder = filepath.Clean(dir)
+	}
+	folders = append(folders, file)
+	for left, right := 0, len(folders)-1; left < right; left, right = left+1, right-1 {
+		folders[left], folders[right] = folders[right], folders[left]
+	}
+
+	return folders
 }

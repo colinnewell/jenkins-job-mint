@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path"
+	"path/filepath"
 	"time"
 
 	"github.com/bndr/gojenkins"
@@ -43,7 +43,7 @@ var getCmd = &cobra.Command{
 				log.Printf("Failed to get config for %s: %s\n", jobName, err)
 			}
 			filename := fmt.Sprintf("job-%s-config-%d.xml", jobName, time.Now().Unix())
-			filename = path.Join(folder, filename)
+			filename = filepath.Join(folder, filename)
 			if err := os.WriteFile(filename, []byte(config), 0644); err != nil {
 				fmt.Printf("Failed to write config for %s: %s\n", jobName, err)
 				continue
