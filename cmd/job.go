@@ -8,7 +8,6 @@ import (
 	"log"
 	"os"
 	"path"
-	"path/filepath"
 	"text/template"
 
 	"github.com/bndr/gojenkins"
@@ -116,7 +115,7 @@ func splitFolders(folder string) []string {
 	dir, file := path.Split(folder)
 	for ; dir != ""; dir, file = path.Split(folder) {
 		folders = append(folders, file)
-		folder = filepath.Clean(dir)
+		folder = path.Clean(dir)
 	}
 	folders = append(folders, file)
 	for left, right := 0, len(folders)-1; left < right; left, right = left+1, right-1 {
