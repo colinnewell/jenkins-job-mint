@@ -100,7 +100,7 @@ func init() {
 	}{
 		{"template", "Template file containing jenkins config (required)"},
 		{"variables", "Variables to use in the template (json)"},
-		{"folder", "Jenkins folder to place job in (optional)"},
+		{"folder", "Jenkins folder to place job in (optional).  Example: a/b"},
 	}
 	for _, f := range flags {
 		jobCmd.PersistentFlags().String(f.Name, "", f.Description)
