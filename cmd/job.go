@@ -87,12 +87,18 @@ provided via the command line passed in.
 func init() {
 	rootCmd.AddCommand(jobCmd)
 
-	jobCmd.PersistentFlags().String("template", "", "Template file containing jenkins config")
-	if err := viper.BindPFlag("template", jobCmd.PersistentFlags().Lookup("template")); err != nil {
-		log.Fatal("Programmer error:", err)
+	flags := []struct {
+		Name        string
+		Description string
+	}{
+		{"template", "Template file containing jenkins config (required)"},
+		{"variables", "Variables to use in the template (json)"},
+		{"folder", "Jenkins folder to place job in (optional)"},
 	}
-	jobCmd.PersistentFlags().String("variables", "", "Variables to use in the template (json)")
-	if err := viper.BindPFlag("variables", jobCmd.PersistentFlags().Lookup("variables")); err != nil {
-		log.Fatal("Programmer error:", err)
+	for _, f := range flags {
+		jobCmd.PersistentFlags().String(f.Name, "", f.Description)
+		if err := viper.BindPFlag(f.Name, jobCmd.PersistentFlags().Lookup(f.Name)); err != nil {
+			log.Fatal("Programmer error:", err)
+		}
 	}
 }
