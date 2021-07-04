@@ -7,6 +7,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"text/template"
 
@@ -112,8 +113,8 @@ func init() {
 
 func splitFolders(folder string) []string {
 	folders := []string{}
-	dir, file := filepath.Split(folder)
-	for ; dir != ""; dir, file = filepath.Split(folder) {
+	dir, file := path.Split(folder)
+	for ; dir != ""; dir, file = path.Split(folder) {
 		folders = append(folders, file)
 		folder = filepath.Clean(dir)
 	}
