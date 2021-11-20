@@ -3,7 +3,7 @@ VERSION  := $(shell git describe --tags 2>/dev/null || git rev-parse --short HEA
 
 all: mint
 
-mint: *.go cmd/*.go
+mint: *.go cmd/*.go go.*
 	go build -o mint -ldflags "-X github.com/colinnewell/jenkins-job-mint/cmd.Version=$(VERSION)" main.go
 
 test:
