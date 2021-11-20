@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"path"
@@ -57,6 +58,10 @@ provided via the command line passed in.
 
 		jenkins := gojenkins.CreateJenkins(nil, url, user, token)
 		ctx := context.Background()
+		if viper.GetBool("debug") {
+			fmt.Println("debug mode")
+			ctx = context.WithValue(ctx, "debug", true)
+		}
 		if _, err := jenkins.Init(ctx); err != nil {
 			log.Fatal("Failed to connect to Jenkins", err)
 		}
@@ -107,6 +112,11 @@ func init() {
 		if err := viper.BindPFlag(f.Name, jobCmd.PersistentFlags().Lookup(f.Name)); err != nil {
 			log.Fatal("Programmer error:", err)
 		}
+	}
+
+	jobCmd.PersistentFlags().Bool("debug", false, "Emit debug from the jenkins library")
+	if err := viper.BindPFlag("debug", jobCmd.PersistentFlags().Lookup("debug")); err != nil {
+		log.Fatal("Programmer error:", err)
 	}
 }
 
