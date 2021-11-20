@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"path"
@@ -59,7 +58,7 @@ provided via the command line passed in.
 		jenkins := gojenkins.CreateJenkins(nil, url, user, token)
 		ctx := context.Background()
 		if viper.GetBool("debug") {
-			fmt.Println("debug mode")
+			//nolint:staticcheck
 			ctx = context.WithValue(ctx, "debug", true)
 		}
 		if _, err := jenkins.Init(ctx); err != nil {
