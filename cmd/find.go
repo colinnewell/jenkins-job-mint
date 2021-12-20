@@ -4,8 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/bndr/gojenkins"
+	"github.com/lestrrat-go/libxml2/parser"
+	"github.com/lestrrat-go/libxml2/xpath"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -34,7 +37,7 @@ var findCmd = &cobra.Command{
 
 		jobType := viper.GetString("type")
 		color := viper.GetString("color")
-		xpath := viper.GetString("xpath")
+		xpathLookup := viper.GetString("xpath")
 		for _, j := range jobs {
 			if jobType != "" && j.Class != jobType {
 				continue
@@ -42,7 +45,7 @@ var findCmd = &cobra.Command{
 			if color != "" && j.Color != color {
 				continue
 			}
-			if xpath != "" {
+			if xpathLookup != "" {
 				// download config and do stuff
 				job, err := jenkins.GetJob(ctx, j.Name)
 				if err != nil {
@@ -53,9 +56,13 @@ var findCmd = &cobra.Command{
 				if err != nil {
 					log.Printf("Failed to get config for %s: %s\n", j.Name, err)
 				}
-				fmt.Println(config)
-
-				// now check the xml
+				match, err := xpathMatches(config, xpathLookup)
+				if err != nil {
+					log.Printf("Error matching %s: %s\n", j.Name, err)
+				}
+				if !match {
+					continue
+				}
 			}
 			if viper.GetBool("verbose") {
 				fmt.Printf("%s (type: %s) - %s - %s\n", j.Name, j.Class, j.Color, j.Url)
@@ -64,6 +71,36 @@ var findCmd = &cobra.Command{
 			}
 		}
 	},
+}
+
+func xpathMatches(config string, xpathLookup string) (bool, error) {
+	p := parser.New(parser.XMLParseNoWarning)
+	doc, err := p.ParseReader(strings.NewReader(config))
+	if err != nil {
+		return false, err
+	}
+	defer doc.Free()
+	root, err := doc.DocumentElement()
+	if err != nil {
+		return false, err
+	}
+
+	ctx, err := xpath.NewContext(root)
+	if err != nil {
+		return false, err
+	}
+	defer ctx.Free()
+	x, err := ctx.Find(xpathLookup)
+	if err != nil {
+		return false, err
+	}
+
+	defer x.Free()
+	nl := x.NodeList()
+	if len(nl) == 0 {
+		return false, nil
+	}
+	return true, nil
 }
 
 func init() {
