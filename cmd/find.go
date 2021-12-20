@@ -38,6 +38,8 @@ var findCmd = &cobra.Command{
 		jobType := viper.GetString("type")
 		color := viper.GetString("color")
 		xpathLookup := viper.GetString("xpath")
+		newValue := viper.GetString("new-value")
+		setValue := viper.IsSet("new-value")
 		for _, j := range jobs {
 			if jobType != "" && j.Class != jobType {
 				continue
@@ -56,12 +58,15 @@ var findCmd = &cobra.Command{
 				if err != nil {
 					log.Printf("Failed to get config for %s: %s\n", j.Name, err)
 				}
-				match, err := xpathMatches(config, xpathLookup)
+				match, updated, err := xpathMatches(config, xpathLookup, setValue, newValue)
 				if err != nil {
 					log.Printf("Error matching %s: %s\n", j.Name, err)
 				}
 				if !match {
 					continue
+				}
+				if setValue {
+					job.UpdateConfig(ctx, updated)
 				}
 			}
 			if viper.GetBool("verbose") {
@@ -73,34 +78,41 @@ var findCmd = &cobra.Command{
 	},
 }
 
-func xpathMatches(config string, xpathLookup string) (bool, error) {
+func xpathMatches(config string, xpathLookup string, setValue bool, newValue string) (bool, string, error) {
 	p := parser.New(parser.XMLParseNoWarning)
 	doc, err := p.ParseReader(strings.NewReader(config))
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 	defer doc.Free()
 	root, err := doc.DocumentElement()
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 
 	ctx, err := xpath.NewContext(root)
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 	defer ctx.Free()
 	x, err := ctx.Find(xpathLookup)
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 
 	defer x.Free()
 	nl := x.NodeList()
 	if len(nl) == 0 {
-		return false, nil
+		return false, "", nil
 	}
-	return true, nil
+	if !setValue {
+		return true, "", nil
+	}
+
+	for i := range nl {
+		nl[i].SetNodeValue(newValue)
+	}
+	return true, doc.String(), nil
 }
 
 func init() {
@@ -118,6 +130,11 @@ func init() {
 
 	findCmd.PersistentFlags().String("xpath", "", "Limit to jobs with config matching the xpath query")
 	if err := viper.BindPFlag("xpath", findCmd.PersistentFlags().Lookup("xpath")); err != nil {
+		log.Fatal("Programmer error:", err)
+	}
+
+	findCmd.PersistentFlags().String("new-value", "", "Change string value in config matched by xpath")
+	if err := viper.BindPFlag("new-value", findCmd.PersistentFlags().Lookup("new-value")); err != nil {
 		log.Fatal("Programmer error:", err)
 	}
 }
