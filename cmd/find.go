@@ -66,7 +66,10 @@ var findCmd = &cobra.Command{
 					continue
 				}
 				if setValue {
-					job.UpdateConfig(ctx, updated)
+					err := job.UpdateConfig(ctx, updated)
+					if err != nil {
+						log.Printf("Error updating config for %s: %s\n", j.Name, err)
+					}
 				}
 			}
 			if viper.GetBool("verbose") {
