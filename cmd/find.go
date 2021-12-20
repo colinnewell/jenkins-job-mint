@@ -17,8 +17,8 @@ import (
 var findCmd = &cobra.Command{
 	Args:  hasCredentials,
 	Use:   "find",
-	Short: "Find jobs with config that matches the xpath query",
-	Long:  `Provide xpath queries to find configs that match.`,
+	Short: "Find jobs",
+	Long:  `Look up by type, color or match a config using an xpath query.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		user := viper.GetString("user")
 		url := viper.GetString("url")
