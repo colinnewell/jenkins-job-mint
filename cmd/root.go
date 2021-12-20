@@ -88,6 +88,10 @@ func standardValidation(cmd *cobra.Command, args []string) error {
 	if err := cobra.MinimumNArgs(1)(cmd, args); err != nil {
 		return err
 	}
+	return hasCredentials(cmd, args)
+}
+
+func hasCredentials(cmd *cobra.Command, args []string) error {
 	for _, f := range []string{"user", "token", "url"} {
 		if viper.GetString(f) == "" {
 			return fmt.Errorf("%s must be provided", f)
