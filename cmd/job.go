@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"strings"
 	"text/template"
 
 	"github.com/bndr/gojenkins"
@@ -88,7 +89,12 @@ provided via the command line passed in.
 			}
 		} else {
 			if _, err := jenkins.CreateJob(ctx, buf.String(), job); err != nil {
-				log.Fatalf("Failed to create job %s: %s", job, err)
+				if strings.HasPrefix(err.Error(), "A job already exists with the name") {
+					// this could be neater, no error handling.
+					jenkins.UpdateJob(ctx, job, buf.String())
+				} else {
+					log.Fatalf("Failed to create job %s: %s", job, err)
+				}
 			}
 		}
 
